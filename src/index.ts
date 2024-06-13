@@ -5,8 +5,8 @@ create({
   session: 'bot'
 })
   .then((client: Whatsapp) => start(client))
-  .catch((erro) => {
-    console.log(erro);
+  .catch((err) => {
+    console.log(err);
   });
 
 const start = (client: Whatsapp) => {

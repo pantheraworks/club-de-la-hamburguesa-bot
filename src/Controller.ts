@@ -23,23 +23,16 @@ class Controller {
     return await this.sendText(user.id, `Hola ${name}!`);
   }
 
-  public async sendMainOptions(user: User) {
-    const options = [
-      'Mostrar menú',
-      'Realizar pedido',
-      'Consultar pedido'
-    ]
-    const optionText = options.map((option, index) => `${index + 1}. ${option}`).join('\n');
-    const text = `Seleccioná una opción:\n${optionText}`;
-    return await this.sendText(user.id, text);
-  }
-
   public async sendText(to: string, text: string) {
     return await this.client.sendText(to, text);
   }
 
-  private async sendImage(to: string, path: string, image_name: string, caption: string) {
-    return await this.client.sendImage(to, path, image_name, caption);
+  public async sendLink(user: User, link: string, title: string, text: string) {
+    return await this.client.sendLinkPreview(user.id, link, title, text);
+  }
+
+  async sendMenuLink(user: User) {
+    return this.sendLink(user, 'https://pedilo.store/el-club-de-la-hamburguesa', 'Para realizar un pedido 👇🏼', 'Acordate que si compras medallones de queso, tenes que comentar en el medallón, en que hamburguesas queres ponerlos.');
   }
 }
 

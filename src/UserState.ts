@@ -26,12 +26,23 @@ class UserStateOrderDone extends UserState {
   public handleMessage = async (option: string, controller: Controller, user: User) => {
     const parser = new Parser(option);
     if (controller.validateParser(parser)) {
-    return await controller.sendText(user.id,'Como abonas? \n' +
-      '●Efectivo (avísanos si te tenemos que llevar cambio) \n' +
-      '● Mercado pago (mándanos el comprobante de pago)');
+
+      return await controller.sendText(user.id, 'Como abonas? \n' +
+        '● Efectivo (avísanos si te tenemos que llevar cambio) \n' +
+        '● Mercado pago (mándanos el comprobante de pago)');
     }
-    await controller.sendText(user.id,'Tenés que usar el link para armar tu pedido y así "finalizar por whatsapp" mandando el mensaje de tu pedido.');
+    await controller.sendText(user.id, 'Tenés que usar el link para armar tu pedido y así "finalizar por whatsapp" mandando el mensaje de tu pedido.');
     return await controller.sendMenuLink(user);
+  }
+}
+
+class UserStatePaymentMethod extends UserState {
+  constructor() {
+    super();
+  }
+
+  public handleMessage = async (option: string, controller: Controller, user: User) => {
+    
   }
 }
 

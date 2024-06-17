@@ -6,10 +6,14 @@ class Controller {
 
   private client: Whatsapp;
   private users: Map<string, User>;
+  public parser: Parser;
+  public paymentMethod: string;
 
   public constructor(client: Whatsapp) {
     this.client = client;
     this.users = new Map();
+    this.parser = new Parser("");
+    this.paymentMethod = 'Todavia no se realizó el pedido';
   }
 
   public async handleMessage(message: Message) {
@@ -36,30 +40,39 @@ class Controller {
     return this.sendLink(user, 'https://pedilo.store/el-club-de-la-hamburguesa', 'Para realizar un pedido 👇🏼', '');
   }
 
-  public validateParser(parser: Parser): boolean {
-    if (parser.name === null) {
+  public validateParser(): boolean {
+    if (this.parser.name === null) {
       console.error("Nombre no encontrado");
       return false;
     }
-    if (parser.items.length === 0) {
+    if (this.parser.items.length === 0) {
       console.error("No se encontraron items");
       return false;
     }
-    if (parser.subtotal === null) {
+    if (this.parser.subtotal === null) {
       console.error("Subtotal no encontrado");
       return false;
     }
-    const sumaItems = parser.items.reduce((sum: number, item: { quantity: number, product: string, price: number }) => sum + (item.price), 0);
-    const totalWithDelivery = sumaItems + (parser.address ? parser.deliveryExtraPrice : 0);
-    if (parser.subtotal !== totalWithDelivery) {
-      console.error(`El subtotal (${parser.subtotal}) no coincide con la suma de los items más entrega (${totalWithDelivery})`);
+    const sumaItems = this.parser.items.reduce((sum: number, item: { quantity: number, product: string, price: number }) => sum + (item.price), 0);
+    const totalWithDelivery = sumaItems + (this.parser.address ? this.parser.deliveryExtraPrice : 0);
+    if (this.parser.subtotal !== totalWithDelivery) {
+      console.error(`El subtotal (${this.parser.subtotal}) no coincide con la suma de los items más entrega (${totalWithDelivery})`);
       return false;
     }
-    if (parser.table === null && parser.address === null && !parser.takeAway) {
+    if (this.parser.table === null && this.parser.address === null && !this.parser.takeAway) {
       console.error("Número de mesa, dirección y opción de retiro por el local no encontrados");
       return false;
     }
     return true;
+  }
+
+  public async sendPaymentMethods(user: User){
+      return await this.sendText(user.id, 'Como abonas? \n' +
+        '● Efectivo (avísanos si te tenemos que llevar cambio) \n' +
+        '● Mercado pago (mándanos el comprobante de pago)\n' +
+        'Nombre del titular: Santiago Agustín  Ruiz\n' +
+        'Alias: espina.catre.reno.mp\n' +
+        'CBU: 0000003100040939563722');
   }
 }
 

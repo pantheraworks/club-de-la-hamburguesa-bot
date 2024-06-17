@@ -52,4 +52,8 @@ export class Parser {
 
     this.takeAway = takeAwayPattern.test(mensaje);
   }
+
+  public hasMedallon(){
+    return this.items.some(item => item.product.includes("Medallon con cheddar"));
+  }
 }

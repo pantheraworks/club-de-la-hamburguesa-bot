@@ -53,8 +53,8 @@ class Controller {
       console.error("Subtotal no encontrado");
       return false;
     }
-    const sumaItems = this.parser.items.reduce((sum: number, item: { quantity: number, product: string, price: number }) => sum + (item.price), 0);
-    const totalWithDelivery = sumaItems + (this.parser.address ? this.parser.deliveryExtraPrice : 0);
+    const sumItems = this.parser.items.reduce((sum: number, item: { quantity: number, product: string, price: number }) => sum + (item.price), 0);
+    const totalWithDelivery = sumItems + (this.parser.address ? this.parser.deliveryExtraPrice : 0);
     if (this.parser.subtotal !== totalWithDelivery) {
       console.error(`El subtotal (${this.parser.subtotal}) no coincide con la suma de los items más entrega (${totalWithDelivery})`);
       return false;

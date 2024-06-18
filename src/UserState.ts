@@ -29,6 +29,7 @@ class UserStatePaymentMethod extends UserState {
       user.setState(new UserStatePaymentMethodDone());
       return await controller.sendPaymentMethods(user);
     }
+    return await controller.sendText(user.id, 'Enviaste algo incorrecto, con el link tenes que armar tu pedido enviar el mensaje al "Finalizar por whatsapp"');
   }
 }
 

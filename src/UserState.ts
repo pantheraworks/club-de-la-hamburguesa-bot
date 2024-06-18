@@ -55,7 +55,7 @@ class UserStateVerifyInformation extends UserState {
   }
 
   public handleMessage = async (option: string, controller: Controller, user: User) => {
-    if(option == 'ok' || option == 'OK'){
+    if(option == 'ok' || option == 'OK' || option == 'Ok'){
       user.setState(new UserStateDefault());
       return await controller.sendText(user.id,'Vamos a revisar que enviaste toda la informacion correctamente. Si es así, realizamos tu pedido.\nGracias por elegirnos!');
     }

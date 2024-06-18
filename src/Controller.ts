@@ -1,14 +1,19 @@
 import {Message, Whatsapp} from "venom-bot";
 import User from "./User";
+import {Parser} from "./Parser";
 
 class Controller {
 
   private client: Whatsapp;
   private users: Map<string, User>;
+  public parser: Parser;
+  public paymentMethod: string;
 
   public constructor(client: Whatsapp) {
     this.client = client;
     this.users = new Map();
+    this.parser = new Parser("");
+    this.paymentMethod = 'Todavía no se realizó el pedido';
   }
 
   public async handleMessage(message: Message) {
@@ -23,23 +28,51 @@ class Controller {
     return await this.sendText(user.id, `Hola ${name}!`);
   }
 
-  public async sendMainOptions(user: User) {
-    const options = [
-      'Mostrar menú',
-      'Realizar pedido',
-      'Consultar pedido'
-    ]
-    const optionText = options.map((option, index) => `${index + 1}. ${option}`).join('\n');
-    const text = `Seleccioná una opción:\n${optionText}`;
-    return await this.sendText(user.id, text);
-  }
-
   public async sendText(to: string, text: string) {
     return await this.client.sendText(to, text);
   }
 
-  private async sendImage(to: string, path: string, image_name: string, caption: string) {
-    return await this.client.sendImage(to, path, image_name, caption);
+  public async sendLink(user: User, link: string, title: string, text: string) {
+    return await this.client.sendLinkPreview(user.id, link, title, text);
+  }
+
+  async sendMenuLink(user: User) {
+    return this.sendLink(user, 'https://pedilo.store/el-club-de-la-hamburguesa', 'Para realizar un pedido 👇🏼', '');
+  }
+
+  public validateParser(): boolean {
+    if (this.parser.name === null) {
+      console.error("Nombre no encontrado");
+      return false;
+    }
+    if (this.parser.items.length === 0) {
+      console.error("No se encontraron items");
+      return false;
+    }
+    if (this.parser.subtotal === null) {
+      console.error("Subtotal no encontrado");
+      return false;
+    }
+    const sumaItems = this.parser.items.reduce((sum: number, item: { quantity: number, product: string, price: number }) => sum + (item.price), 0);
+    const totalWithDelivery = sumaItems + (this.parser.address ? this.parser.deliveryExtraPrice : 0);
+    if (this.parser.subtotal !== totalWithDelivery) {
+      console.error(`El subtotal (${this.parser.subtotal}) no coincide con la suma de los items más entrega (${totalWithDelivery})`);
+      return false;
+    }
+    if (this.parser.table === null && this.parser.address === null && !this.parser.takeAway) {
+      console.error("Número de mesa, dirección y opción de retiro por el local no encontrados");
+      return false;
+    }
+    return true;
+  }
+
+  public async sendPaymentMethods(user: User){
+      return await this.sendText(user.id, 'Como abonas? \n' +
+        '● Efectivo (avísanos si te tenemos que llevar cambio) \n' +
+        '● Mercado pago (mándanos el comprobante de pago)\n' +
+        'Nombre del titular: Santiago Agustín  Ruiz\n' +
+        'Alias: espina.catre.reno.mp\n' +
+        'CBU: 0000003100040939563722');
   }
 }
 

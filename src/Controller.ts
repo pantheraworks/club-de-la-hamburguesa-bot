@@ -13,7 +13,7 @@ class Controller {
     this.client = client;
     this.users = new Map();
     this.parser = new Parser("");
-    this.paymentMethod = 'Todavia no se realizó el pedido';
+    this.paymentMethod = 'Todavía no se realizó el pedido';
   }
 
   public async handleMessage(message: Message) {

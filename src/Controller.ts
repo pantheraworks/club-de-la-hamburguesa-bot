@@ -37,7 +37,8 @@ class Controller {
   }
 
   async sendMenuLink(user: User) {
-    return this.sendLink(user, 'https://pedilo.store/el-club-de-la-hamburguesa', 'Para realizar un pedido 👇🏼', '');
+    const menuLink = 'https://pedilo.store/el-club-de-la-hamburguesa';
+    return this.sendLink(user, menuLink, 'Para realizar un pedido 👇🏼', '');
   }
 
   public validateParser(): boolean {

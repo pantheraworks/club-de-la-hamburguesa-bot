@@ -1,5 +1,2 @@
 .idea
-node_modules
 tokens
-/src/index.js
-*.js

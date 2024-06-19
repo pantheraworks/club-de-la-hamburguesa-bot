@@ -8,10 +8,12 @@ class Controller {
   private users: Map<string, User>;
   public parser: Parser;
   public paymentMethod: string;
+  private usersFilePath: string;
 
   public constructor(client: Whatsapp) {
     this.client = client;
     this.users = new Map();
+    this.usersFilePath = "path/to/users/file";
     this.parser = new Parser("");
     this.paymentMethod = 'Todavía no se realizó el pedido';
   }

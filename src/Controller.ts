@@ -1,6 +1,7 @@
 import {Message, Whatsapp} from "venom-bot";
 import User from "./User";
 import {Parser} from "./Parser";
+import * as fs from 'fs';
 
 class Controller {
 
@@ -16,6 +17,24 @@ class Controller {
     this.usersFilePath = "path/to/users/file";
     this.parser = new Parser("");
     this.paymentMethod = 'Todavía no se realizó el pedido';
+  }
+
+  private readUsersFromFile(): { [key: string]: User } {
+    if (fs.existsSync(this.usersFilePath)) {
+      const data = fs.readFileSync(this.usersFilePath, 'utf-8');
+      return JSON.parse(data);
+    }
+    return {};
+  }
+
+  private writeUsersToFile(users: { [key: string]: User }): void {
+    fs.writeFileSync(this.usersFilePath, JSON.stringify(users, null, 2), 'utf-8');
+  }
+
+  public addUser(user: User): void {
+    const users = this.readUsersFromFile();
+    users[user.id] = user;
+    this.writeUsersToFile(users);
   }
 
   public async handleMessage(message: Message) {

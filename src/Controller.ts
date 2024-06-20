@@ -23,6 +23,9 @@ class Controller {
   private readUsersFromFile(): { [key: string]: User } {
     if (fs.existsSync(this.usersFilePath)) {
       const data = fs.readFileSync(this.usersFilePath, 'utf-8');
+      if (data.trim() === "") {
+        return {}; // Return an empty object if the file is empty
+      }
       try {
         return JSON.parse(data);
       } catch (error) {
@@ -48,10 +51,15 @@ class Controller {
     return users[id];
   }
 
-  public async handleMessage(message: Message): Promise<string> {
-    let user = this.getUser(message.from) || new User(message.from, message.sender.pushname);
+  public async handleMessage(message: any): Promise<string> {  // Replace `any` with the actual Message type
+    const users = this.readUsersFromFile();
+    let user = users[message.from];
+    if (!user) {
+      user = new User(message.from, message.sender.pushname || '');
+    }
     const response = await user.handleMessage(message.body, this);
-    this.addUser(user);
+    users[message.from] = user;
+    this.writeUsersToFile(users);
     return response;
   }
 

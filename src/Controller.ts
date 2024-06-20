@@ -51,7 +51,7 @@ class Controller {
     return users[id];
   }
 
-  public async handleMessage(message: any): Promise<string> {  // Replace `any` with the actual Message type
+  public async handleMessage(message: Message): Promise<string> {  // Replace `any` with the actual Message type
     const users = this.readUsersFromFile();
     let user = users[message.from];
     if (!user) {

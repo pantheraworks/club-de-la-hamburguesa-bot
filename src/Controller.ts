@@ -35,7 +35,7 @@ class Controller {
     const users = this.getUsersFromFile();
     let user = users[message.from];
     if (!user) {
-      user = new User(message.from, message.sender.pushname || '');
+      user = new User(message.from, message.sender.pushname);
     }
     const response = await user.handleMessage(message.body, this);
     users[message.from] = user;

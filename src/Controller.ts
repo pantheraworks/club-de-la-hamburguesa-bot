@@ -23,7 +23,12 @@ class Controller {
   private readUsersFromFile(): { [key: string]: User } {
     if (fs.existsSync(this.usersFilePath)) {
       const data = fs.readFileSync(this.usersFilePath, 'utf-8');
-      return JSON.parse(data);
+      try {
+        return JSON.parse(data);
+      } catch (error) {
+        console.error('Error parsing JSON data from file:', error);
+        return {};
+      }
     }
     return {};
   }

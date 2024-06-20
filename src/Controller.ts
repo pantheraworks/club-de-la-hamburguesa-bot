@@ -20,46 +20,26 @@ class Controller {
     this.paymentMethod = 'Todavía no se realizó el pedido';
   }
 
-  private readUsersFromFile(): { [key: string]: User } {
-    if (fs.existsSync(this.usersFilePath)) {
-      const data = fs.readFileSync(this.usersFilePath, 'utf-8');
-      if (data.trim() === "") {
-        return {}; // Return an empty object if the file is empty
-      }
-      try {
-        return JSON.parse(data);
-      } catch (error) {
-        console.error('Error parsing JSON data from file:', error);
-        return {};
-      }
-    }
-    return {};
+  private getUsersFromFile(): { [userId: string]: User } {
+    // Read users from the JSON file
+    const data = fs.readFileSync(this.usersFilePath, 'utf-8');
+    return JSON.parse(data);
   }
 
-  private writeUsersToFile(users: { [key: string]: User }): void {
-    fs.writeFileSync(this.usersFilePath, JSON.stringify(users, null, 2), 'utf-8');
-  }
-
-  public addUser(user: User): void {
-    const users = this.readUsersFromFile();
-    users[user.id] = user;
-    this.writeUsersToFile(users);
-  }
-
-  public getUser(id: string): User | undefined {
-    const users = this.readUsersFromFile();
-    return users[id];
+  private saveUsersToFile(users: { [userId: string]: User }) {
+    // Write users to the JSON file
+    fs.writeFileSync(this.usersFilePath, JSON.stringify(users), 'utf-8');
   }
 
   public async handleMessage(message: Message): Promise<string> {  // Replace `any` with the actual Message type
-    const users = this.readUsersFromFile();
+    const users = this.getUsersFromFile();
     let user = users[message.from];
     if (!user) {
       user = new User(message.from, message.sender.pushname || '');
     }
     const response = await user.handleMessage(message.body, this);
     users[message.from] = user;
-    this.writeUsersToFile(users);
+    this.saveUsersToFile(users);
     return response;
   }
 

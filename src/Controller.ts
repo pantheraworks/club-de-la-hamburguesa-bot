@@ -6,15 +6,16 @@ import * as fs from 'fs';
 class Controller {
 
   private client: Whatsapp;
-  private users: Map<string, User>;
   public parser: Parser;
   public paymentMethod: string;
   private usersFilePath: string;
 
   public constructor(client: Whatsapp) {
     this.client = client;
-    this.users = new Map();
-    this.usersFilePath = "path/to/users/file";
+    this.usersFilePath = "./src/users.json";
+    if (!fs.existsSync(this.usersFilePath)) {
+      fs.writeFileSync(this.usersFilePath, '{}', 'utf-8');
+    }
     this.parser = new Parser("");
     this.paymentMethod = 'Todavía no se realizó el pedido';
   }
@@ -37,10 +38,15 @@ class Controller {
     this.writeUsersToFile(users);
   }
 
-  public async handleMessage(message: Message) {
-    const user = this.users.get(message.from) || new User(message.from, message.sender.pushname || '');
+  public getUser(id: string): User | undefined {
+    const users = this.readUsersFromFile();
+    return users[id];
+  }
+
+  public async handleMessage(message: Message): Promise<string> {
+    let user = this.getUser(message.from) || new User(message.from, message.sender.pushname);
     const response = await user.handleMessage(message.body, this);
-    this.users.set(message.from, user);
+    this.addUser(user);
     return response;
   }
 

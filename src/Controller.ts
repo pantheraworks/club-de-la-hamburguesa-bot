@@ -2,13 +2,14 @@ import {Message, Whatsapp} from "venom-bot";
 import User from "./User";
 import {Parser} from "./Parser";
 import * as fs from 'fs';
+import {UserState, UserStateDefault} from "./UserState";
 
 class Controller {
 
   private client: Whatsapp;
   public parser: Parser;
   public paymentMethod: string;
-  private usersFilePath: string;
+  private readonly usersFilePath: string;
 
   public constructor(client: Whatsapp) {
     this.client = client;
@@ -21,17 +22,44 @@ class Controller {
   }
 
   private getUsersFromFile(): { [userId: string]: User } {
-    // Read users from the JSON file
-    const data = fs.readFileSync(this.usersFilePath, 'utf-8');
-    return JSON.parse(data);
+    let data: string;
+    try {
+      data = fs.readFileSync(this.usersFilePath, 'utf-8');
+    } catch (error) {
+      console.error('Error reading users file:', error);
+      data = '{}';
+    }
+    let plainUsers: { [key: string]: User };
+    try {
+      plainUsers = JSON.parse(data);
+    } catch (error) {
+      console.error('Error parsing JSON data:', error);
+      plainUsers = {};
+    }
+    const users: { [userId: string]: User } = {};
+    for (const id in plainUsers) {
+      if (plainUsers.hasOwnProperty(id)) {
+        const user = plainUsers[id];
+        users[id] = new User(user.id, user.name);
+        users[id].setState(new UserStateDefault());
+      }
+    }
+    return users;
   }
 
   private saveUsersToFile(users: { [userId: string]: User }) {
-    // Write users to the JSON file
-    fs.writeFileSync(this.usersFilePath, JSON.stringify(users), 'utf-8');
+    const plainUsers: { [key: string]: { id: string, name: string, state: UserState } } = {};    for (const id in users) {
+      const user = users[id];
+      plainUsers[id] = {
+        id: user.id,
+        name: user.name,
+        state: user.state
+      };
+    }
+    fs.writeFileSync(this.usersFilePath, JSON.stringify(plainUsers), 'utf-8');
   }
 
-  public async handleMessage(message: Message): Promise<string> {  // Replace `any` with the actual Message type
+  public async handleMessage(message: Message): Promise<string> {
     const users = this.getUsersFromFile();
     let user = users[message.from];
     if (!user) {

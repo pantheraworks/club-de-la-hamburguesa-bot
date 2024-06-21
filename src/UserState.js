@@ -34,6 +34,7 @@ class UserStatePaymentMethod extends UserState {
                 user.setState(new UserStatePaymentMethodDone());
                 return yield controller.sendPaymentMethods(user);
             }
+            return yield controller.sendText(user.id, 'Enviaste algo incorrecto, con el link tenes que armar tu pedido enviar el mensaje al "Finalizar por whatsapp"');
         });
     }
 }
@@ -55,7 +56,7 @@ class UserStateVerifyInformation extends UserState {
     constructor() {
         super();
         this.handleMessage = (option, controller, user) => __awaiter(this, void 0, void 0, function* () {
-            if (option == 'ok' || option == 'OK') {
+            if (option == 'ok' || option == 'OK' || option == 'Ok') {
                 user.setState(new UserStateDefault());
                 return yield controller.sendText(user.id, 'Vamos a revisar que enviaste toda la informacion correctamente. Si es así, realizamos tu pedido.\nGracias por elegirnos!');
             }

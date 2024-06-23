@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -14,18 +37,61 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const User_1 = __importDefault(require("./User"));
 const Parser_1 = require("./Parser");
+const fs = __importStar(require("fs"));
 class Controller {
     constructor(client) {
         this.client = client;
-        this.users = new Map();
+        this.usersFilePath = "./src/users.json";
         this.parser = new Parser_1.Parser("");
         this.paymentMethod = 'Todavía no se realizó el pedido';
+        if (!fs.existsSync(this.usersFilePath)) {
+            fs.writeFileSync(this.usersFilePath, '{}', 'utf-8');
+        }
+    }
+    getUsersFromFile() {
+        let data;
+        try {
+            data = fs.readFileSync(this.usersFilePath, 'utf-8');
+        }
+        catch (error) {
+            console.error('Error reading users file:', error);
+            data = '{}';
+        }
+        let plainUsers;
+        try {
+            plainUsers = JSON.parse(data);
+        }
+        catch (error) {
+            console.error('Error parsing JSON data:', error);
+            plainUsers = {};
+        }
+        const users = {};
+        for (const id in plainUsers) {
+            if (plainUsers.hasOwnProperty(id)) {
+                users[id] = User_1.default.fromJSON(plainUsers[id]);
+            }
+        }
+        return users;
+    }
+    saveUsersToFile(users) {
+        const plainUsers = {};
+        for (const id in users) {
+            if (users.hasOwnProperty(id)) {
+                plainUsers[id] = users[id].toJSON();
+            }
+        }
+        fs.writeFileSync(this.usersFilePath, JSON.stringify(plainUsers, null, 2), 'utf-8');
     }
     handleMessage(message) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = this.users.get(message.from) || new User_1.default(message.from, message.sender.pushname || '');
+            const users = this.getUsersFromFile();
+            let user = users[message.from];
+            if (!user) {
+                user = new User_1.default(message.from, message.sender.pushname || '');
+            }
             const response = yield user.handleMessage(message.body, this);
-            this.users.set(message.from, user);
+            users[message.from] = user;
+            this.saveUsersToFile(users);
             return response;
         });
     }
@@ -63,8 +129,8 @@ class Controller {
             console.error("Subtotal no encontrado");
             return false;
         }
-        const sumaItems = this.parser.items.reduce((sum, item) => sum + (item.price), 0);
-        const totalWithDelivery = sumaItems + (this.parser.address ? this.parser.deliveryExtraPrice : 0);
+        const sumItems = this.parser.items.reduce((sum, item) => sum + (item.price), 0);
+        const totalWithDelivery = sumItems + (this.parser.address ? this.parser.deliveryExtraPrice : 0);
         if (this.parser.subtotal !== totalWithDelivery) {
             console.error(`El subtotal (${this.parser.subtotal}) no coincide con la suma de los items más entrega (${totalWithDelivery})`);
             return false;

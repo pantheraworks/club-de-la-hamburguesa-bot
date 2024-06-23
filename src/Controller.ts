@@ -1,25 +1,68 @@
 import {Message, Whatsapp} from "venom-bot";
 import User from "./User";
 import {Parser} from "./Parser";
+import * as fs from 'fs';
 
 class Controller {
 
   private client: Whatsapp;
-  private users: Map<string, User>;
   public parser: Parser;
   public paymentMethod: string;
+  private readonly usersFilePath: string;
 
   public constructor(client: Whatsapp) {
     this.client = client;
-    this.users = new Map();
+    this.usersFilePath = "./src/users.json";
     this.parser = new Parser("");
     this.paymentMethod = 'Todavía no se realizó el pedido';
+    if (!fs.existsSync(this.usersFilePath)) {
+      fs.writeFileSync(this.usersFilePath, '{}', 'utf-8');
+    }
   }
 
-  public async handleMessage(message: Message) {
-    const user = this.users.get(message.from) || new User(message.from, message.sender.pushname || '');
+  private getUsersFromFile(): { [userId: string]: User } {
+    let data: string;
+    try {
+      data = fs.readFileSync(this.usersFilePath, 'utf-8');
+    } catch (error) {
+      console.error('Error reading users file:', error);
+      data = '{}';
+    }
+    let plainUsers: { [key: string]: any };
+    try {
+      plainUsers = JSON.parse(data);
+    } catch (error) {
+      console.error('Error parsing JSON data:', error);
+      plainUsers = {};
+    }
+    const users: { [userId: string]: User } = {};
+    for (const id in plainUsers) {
+      if (plainUsers.hasOwnProperty(id)) {
+        users[id] = User.fromJSON(plainUsers[id]);
+      }
+    }
+    return users;
+  }
+
+  private saveUsersToFile(users: { [userId: string]: User }) {
+    const plainUsers: { [key: string]: object } = {};
+    for (const id in users) {
+      if (users.hasOwnProperty(id)) {
+        plainUsers[id] = users[id].toJSON();
+      }
+    }
+    fs.writeFileSync(this.usersFilePath, JSON.stringify(plainUsers, null, 2), 'utf-8');
+  }
+
+  public async handleMessage(message: Message): Promise<string> {
+    const users = this.getUsersFromFile();
+    let user = users[message.from];
+    if (!user) {
+      user = new User(message.from, message.sender.pushname || '');
+    }
     const response = await user.handleMessage(message.body, this);
-    this.users.set(message.from, user);
+    users[message.from] = user;
+    this.saveUsersToFile(users);
     return response;
   }
 
@@ -37,8 +80,7 @@ class Controller {
   }
 
   async sendMenuLink(user: User) {
-    const menuLink = 'https://pedilo.store/el-club-de-la-hamburguesa';
-    return this.sendLink(user, menuLink, 'Para realizar un pedido 👇🏼', '');
+    return this.sendLink(user, 'https://pedilo.store/el-club-de-la-hamburguesa', 'Para realizar un pedido 👇🏼', '');
   }
 
   public validateParser(): boolean {

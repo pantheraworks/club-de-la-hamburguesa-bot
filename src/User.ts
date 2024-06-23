@@ -19,6 +19,20 @@ class User {
   public setState(state: UserState) {
     this.state = state;
   }
+
+  public toJSON(): object {
+    return {
+      id: this.id,
+      name: this.name,
+      state: this.state.toJSON()
+    };
+  }
+
+  public static fromJSON(data: any): User {
+    const user = new User(data.id, data.name);
+    user.state = UserState.fromJSON(data.state);
+    return user;
+  }
 }
 
 export default User;

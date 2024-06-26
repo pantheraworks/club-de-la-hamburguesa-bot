@@ -35,13 +35,12 @@ export class UserRepository {
   }
 
   public saveUsers(users: { [userId: string]: User }) {
-    const plainUsers: { [key: string]: PlainUser } = {};
+    const plainUsers: PlainUser[] = [];
     for (const id in users) {
       if (users.hasOwnProperty(id)) {
-        plainUsers[id] = users[id].toJSON();
+        plainUsers.push(users[id].toJSON());
       }
     }
     fs.writeFileSync(this.usersFilePath, JSON.stringify(plainUsers, null, 2), 'utf-8');
   }
-
 }

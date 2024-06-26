@@ -2,6 +2,7 @@ import {Message, Whatsapp} from "venom-bot";
 import User from "./User";
 import {Parser} from "./Parser";
 import * as fs from 'fs';
+import {UserRepository} from "./UserRepository";
 
 class Controller {
 
@@ -20,49 +21,16 @@ class Controller {
     }
   }
 
-  private getUsersFromFile(): { [userId: string]: User } {
-    let data: string;
-    try {
-      data = fs.readFileSync(this.usersFilePath, 'utf-8');
-    } catch (error) {
-      console.error('Error reading users file:', error);
-      data = '{}';
-    }
-    let plainUsers: { [key: string]: any };
-    try {
-      plainUsers = JSON.parse(data);
-    } catch (error) {
-      console.error('Error parsing JSON data:', error);
-      plainUsers = {};
-    }
-    const users: { [userId: string]: User } = {};
-    for (const id in plainUsers) {
-      if (plainUsers.hasOwnProperty(id)) {
-        users[id] = User.fromJSON(plainUsers[id]);
-      }
-    }
-    return users;
-  }
-
-  private saveUsersToFile(users: { [userId: string]: User }) {
-    const plainUsers: { [key: string]: object } = {};
-    for (const id in users) {
-      if (users.hasOwnProperty(id)) {
-        plainUsers[id] = users[id].toJSON();
-      }
-    }
-    fs.writeFileSync(this.usersFilePath, JSON.stringify(plainUsers, null, 2), 'utf-8');
-  }
-
   public async handleMessage(message: Message): Promise<string> {
-    const users = this.getUsersFromFile();
+    const userRepository = new UserRepository();
+    const users = userRepository.getUsers();
     let user = users[message.from];
     if (!user) {
       user = new User(message.from, message.sender.pushname || '');
     }
     const response = await user.handleMessage(message.body, this);
     users[message.from] = user;
-    this.saveUsersToFile(users);
+    userRepository.saveUsers(users);
     return response;
   }
 

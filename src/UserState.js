@@ -13,10 +13,10 @@ exports.UserStateDefault = exports.UserState = void 0;
 const Parser_1 = require("./Parser");
 class UserState {
     toJSON() {
-        return { type: this.type };
+        return this.type;
     }
     static fromJSON(data) {
-        switch (data.type) {
+        switch (data) {
             case 'UserStateDefault':
                 return new UserStateDefault();
             case 'UserStatePaymentMethod':
@@ -26,7 +26,7 @@ class UserState {
             case 'UserStateVerifyInformation':
                 return new UserStateVerifyInformation();
             default:
-                throw new Error(`Unknown state type: ${data.type}`);
+                throw new Error(`Unknown state type: ${data}`);
         }
     }
 }

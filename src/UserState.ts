@@ -7,12 +7,12 @@ abstract class UserState {
 
   abstract handleMessage: (option: string, controller: Controller, user: User) => Promise<any>;
 
-  public toJSON(): object {
-    return { type: this.type };
+  public toJSON(): string {
+    return this.type;
   }
 
-  public static fromJSON(data: any): UserState {
-    switch (data.type) {
+  public static fromJSON(data: string): UserState {
+    switch (data) {
       case 'UserStateDefault':
         return new UserStateDefault();
       case 'UserStatePaymentMethod':
@@ -22,7 +22,7 @@ abstract class UserState {
       case 'UserStateVerifyInformation':
         return new UserStateVerifyInformation();
       default:
-        throw new Error(`Unknown state type: ${data.type}`);
+        throw new Error(`Unknown state type: ${data}`);
     }
   }
 }

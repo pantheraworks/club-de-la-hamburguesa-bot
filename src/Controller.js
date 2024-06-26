@@ -38,6 +38,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const User_1 = __importDefault(require("./User"));
 const Parser_1 = require("./Parser");
 const fs = __importStar(require("fs"));
+const UserRepository_1 = require("./UserRepository");
 class Controller {
     constructor(client) {
         this.client = client;
@@ -48,50 +49,17 @@ class Controller {
             fs.writeFileSync(this.usersFilePath, '{}', 'utf-8');
         }
     }
-    getUsersFromFile() {
-        let data;
-        try {
-            data = fs.readFileSync(this.usersFilePath, 'utf-8');
-        }
-        catch (error) {
-            console.error('Error reading users file:', error);
-            data = '{}';
-        }
-        let plainUsers;
-        try {
-            plainUsers = JSON.parse(data);
-        }
-        catch (error) {
-            console.error('Error parsing JSON data:', error);
-            plainUsers = {};
-        }
-        const users = {};
-        for (const id in plainUsers) {
-            if (plainUsers.hasOwnProperty(id)) {
-                users[id] = User_1.default.fromJSON(plainUsers[id]);
-            }
-        }
-        return users;
-    }
-    saveUsersToFile(users) {
-        const plainUsers = {};
-        for (const id in users) {
-            if (users.hasOwnProperty(id)) {
-                plainUsers[id] = users[id].toJSON();
-            }
-        }
-        fs.writeFileSync(this.usersFilePath, JSON.stringify(plainUsers, null, 2), 'utf-8');
-    }
     handleMessage(message) {
         return __awaiter(this, void 0, void 0, function* () {
-            const users = this.getUsersFromFile();
+            const userRepository = new UserRepository_1.UserRepository();
+            const users = userRepository.getUsers();
             let user = users[message.from];
             if (!user) {
                 user = new User_1.default(message.from, message.sender.pushname || '');
             }
             const response = yield user.handleMessage(message.body, this);
             users[message.from] = user;
-            this.saveUsersToFile(users);
+            userRepository.saveUsers(users);
             return response;
         });
     }

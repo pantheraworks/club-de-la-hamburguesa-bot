@@ -1,5 +1,6 @@
 import {UserState, UserStateDefault} from "./UserState";
 import Controller from "./Controller";
+import {PlainUser} from "./UserRepository";
 
 class User {
   public id: string;
@@ -20,7 +21,7 @@ class User {
     this.state = state;
   }
 
-  public toJSON(): object {
+  public toJSON(): PlainUser {
     return {
       id: this.id,
       name: this.name,
@@ -28,7 +29,7 @@ class User {
     };
   }
 
-  public static fromJSON(data: any): User {
+  public static fromJSON(data: PlainUser): User {
     const user = new User(data.id, data.name);
     user.state = UserState.fromJSON(data.state);
     return user;

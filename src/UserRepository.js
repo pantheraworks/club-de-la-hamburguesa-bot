@@ -19,28 +19,26 @@ class UserRepository {
             console.error('Error reading users file:', error);
             data = '{}';
         }
-        let plainUsers;
+        let plainUsers = [];
         try {
             plainUsers = JSON.parse(data);
         }
         catch (error) {
             console.error('Error parsing JSON data:', error);
-            plainUsers = {};
+            plainUsers = [];
         }
         const users = {};
-        for (const id in plainUsers) {
-            if (plainUsers.hasOwnProperty(id)) {
-                users[id] = User_1.default.fromJSON(plainUsers[id]);
-            }
+        for (const index in plainUsers) {
+            const plainUser = plainUsers[index];
+            const user = User_1.default.fromJSON(plainUser);
+            users[user.id] = user;
         }
         return users;
     }
     saveUsers(users) {
-        const plainUsers = {};
+        const plainUsers = [];
         for (const id in users) {
-            if (users.hasOwnProperty(id)) {
-                plainUsers[id] = users[id].toJSON();
-            }
+            plainUsers.push(users[id].toJSON());
         }
         fs_1.default.writeFileSync(this.usersFilePath, JSON.stringify(plainUsers, null, 2), 'utf-8');
     }

@@ -18,18 +18,18 @@ export class UserRepository {
       console.error('Error reading users file:', error);
       data = '{}';
     }
-    let plainUsers: { [key: string]: PlainUser };
+    let plainUsers: PlainUser[] = [];
     try {
       plainUsers = JSON.parse(data);
     } catch (error) {
       console.error('Error parsing JSON data:', error);
-      plainUsers = {};
+      plainUsers = [];
     }
     const users: { [userId: string]: User } = {};
-    for (const id in plainUsers) {
-      if (plainUsers.hasOwnProperty(id)) {
-        users[id] = User.fromJSON(plainUsers[id]);
-      }
+    for (const index in plainUsers) {
+      const plainUser = plainUsers[index];
+      const user = User.fromJSON(plainUser);
+      users[user.id] = user;
     }
     return users;
   }
@@ -37,9 +37,7 @@ export class UserRepository {
   public saveUsers(users: { [userId: string]: User }) {
     const plainUsers: PlainUser[] = [];
     for (const id in users) {
-      if (users.hasOwnProperty(id)) {
-        plainUsers.push(users[id].toJSON());
-      }
+      plainUsers.push(users[id].toJSON());
     }
     fs.writeFileSync(this.usersFilePath, JSON.stringify(plainUsers, null, 2), 'utf-8');
   }

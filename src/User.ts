@@ -5,7 +5,7 @@ import {PlainUser} from "./UserRepository";
 class User {
   public id: string;
   public name: string;
-  private state: UserState;
+  state: UserState;
 
   public constructor(id: string, name: string) {
     this.id = id;

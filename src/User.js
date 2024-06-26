@@ -33,6 +33,7 @@ class User {
     }
     static fromJSON(data) {
         const user = new User(data.id, data.name);
+        console.log(data.state);
         user.state = UserState_1.UserState.fromJSON(data.state);
         return user;
     }

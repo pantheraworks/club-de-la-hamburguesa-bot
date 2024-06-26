@@ -3,10 +3,32 @@ import User from "./User";
 import {Parser} from "./Parser";
 
 abstract class UserState {
+  abstract type: string;
+
   abstract handleMessage: (option: string, controller: Controller, user: User) => Promise<any>;
+
+  public toJSON(): string {
+    return this.type;
+  }
+
+  public static fromJSON(data: string): UserState {
+    switch (data) {
+      case 'UserStateDefault':
+        return new UserStateDefault();
+      case 'UserStatePaymentMethod':
+        return new UserStatePaymentMethod();
+      case 'UserStatePaymentMethodDone':
+        return new UserStatePaymentMethodDone();
+      case 'UserStateVerifyInformation':
+        return new UserStateVerifyInformation();
+      default:
+        throw new Error(`Unknown state type: ${data}`);
+    }
+  }
 }
 
 class UserStateDefault extends UserState {
+  public type = 'UserStateDefault';
   constructor() {
     super();
   }
@@ -19,6 +41,7 @@ class UserStateDefault extends UserState {
 }
 
 class UserStatePaymentMethod extends UserState {
+  public type = 'UserStatePaymentMethod';
   constructor() {
     super();
   }
@@ -29,11 +52,12 @@ class UserStatePaymentMethod extends UserState {
       user.setState(new UserStatePaymentMethodDone());
       return await controller.sendPaymentMethods(user);
     }
-    return await controller.sendText(user.id, 'Enviaste algo incorrecto, con el link tenes que armar tu pedido enviar el mensaje al "Finalizar por whatsapp"');
+    return await controller.sendText(user.id, 'Tenes que realizar tu pedido a través del link, y enviar el mensaje al "Finalizar por Whatsapp"');
   }
 }
 
 class UserStatePaymentMethodDone extends UserState {
+  public type = 'UserStatePaymentMethodDone';
   constructor(){
     super();
   }
@@ -50,12 +74,13 @@ class UserStatePaymentMethodDone extends UserState {
 }
 
 class UserStateVerifyInformation extends UserState {
+  public type = 'UserStateVerifyInformation';
   constructor() {
     super();
   }
 
   public handleMessage = async (option: string, controller: Controller, user: User) => {
-    if(option == 'ok' || option == 'OK' || option == 'Ok'){
+    if(option.toLowerCase() == "ok"){
       user.setState(new UserStateDefault());
       return await controller.sendText(user.id,'Vamos a revisar que enviaste toda la informacion correctamente. Si es así, realizamos tu pedido.\nGracias por elegirnos!');
     }

@@ -1,25 +1,36 @@
 import {Message, Whatsapp} from "venom-bot";
 import User from "./User";
 import {Parser} from "./Parser";
+import * as fs from 'fs';
+import {UserRepository} from "./UserRepository";
 
 class Controller {
 
   private client: Whatsapp;
-  private users: Map<string, User>;
   public parser: Parser;
   public paymentMethod: string;
+  private readonly usersFilePath: string;
 
   public constructor(client: Whatsapp) {
     this.client = client;
-    this.users = new Map();
+    this.usersFilePath = "./src/users.json";
     this.parser = new Parser("");
     this.paymentMethod = 'Todavía no se realizó el pedido';
+    if (!fs.existsSync(this.usersFilePath)) {
+      fs.writeFileSync(this.usersFilePath, '{}', 'utf-8');
+    }
   }
 
-  public async handleMessage(message: Message) {
-    const user = this.users.get(message.from) || new User(message.from, message.sender.pushname || '');
+  public async handleMessage(message: Message): Promise<string> {
+    const userRepository = new UserRepository();
+    const users = userRepository.getUsers();
+    let user = users[message.from];
+    if (!user) {
+      user = new User(message.from, message.sender.pushname || '');
+    }
     const response = await user.handleMessage(message.body, this);
-    this.users.set(message.from, user);
+    users[message.from] = user;
+    userRepository.saveUsers(users);
     return response;
   }
 
@@ -37,8 +48,7 @@ class Controller {
   }
 
   async sendMenuLink(user: User) {
-    const menuLink = 'https://pedilo.store/el-club-de-la-hamburguesa';
-    return this.sendLink(user, menuLink, 'Para realizar un pedido 👇🏼', '');
+    return this.sendLink(user, 'https://pedilo.store/el-club-de-la-hamburguesa', 'Para realizar un pedido 👇🏼', '');
   }
 
   public validateParser(): boolean {

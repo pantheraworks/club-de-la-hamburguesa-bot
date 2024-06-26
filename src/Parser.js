@@ -23,7 +23,6 @@ class Parser {
         const indicationsPattern = /Indicaciones: (.*?)\n/;
         const commentsPattern = /Comentario: (.*)/;
         const takeAwayPattern = /Retiro por el local/;
-        // Extracción de datos
         const nameMatch = mensaje.match(namePattern);
         this.name = nameMatch ? nameMatch[1].trim() : null;
         const itemsMatch = [...mensaje.matchAll(itemsPattern)];

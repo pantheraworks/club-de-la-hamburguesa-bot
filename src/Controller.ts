@@ -80,10 +80,10 @@ class Controller {
   public async sendPaymentMethods(user: User){
       return await this.sendText(user.id, 'Como abonas? \n' +
         '● Efectivo (avísanos si te tenemos que llevar cambio) \n' +
-        '● Mercado pago (mándanos el comprobante de pago)\n' +
+        '● Transferencia (mándanos el comprobante de pago)\n' +
         'Nombre del titular: Santiago Agustín  Ruiz\n' +
-        'Alias: espina.catre.reno.mp\n' +
-        'CBU: 0000003100040939563722');
+        'Alias: el.club.1\n' +
+        'CBU: 0720477188000000705572');
   }
 }
 

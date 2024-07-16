@@ -6,10 +6,10 @@ class User {
   public name: string;
   public lastMessageTime;
 
-  public constructor(id: string, name: string) {
+  public constructor(id: string, name: string, time: number) {
     this.id = id;
     this.name = name;
-    this.lastMessageTime = -(3 * 60 * 60 * 1000);
+    this.lastMessageTime = time;
   }
 
   public async handleMessage(controller: Controller) {
@@ -32,9 +32,7 @@ class User {
   }
 
   public static fromJSON(data: PlainUser): User {
-    const user = new User(data.id, data.name);
-    user.lastMessageTime = data.lastMessageTime;
-    return user;
+    return new User(data.id, data.name, data.lastMessageTime);
   }
 }
 

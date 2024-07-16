@@ -21,7 +21,7 @@ class Controller {
     const users = userRepository.getUsers();
     let user = users[message.from];
     if (!user) {
-      user = new User(message.from, message.sender.pushname || '');
+      user = new User(message.from, message.sender.pushname || '', -(3 * 60 * 60 * 1000));
     }
     await user.handleMessage(this);
     users[message.from] = user;

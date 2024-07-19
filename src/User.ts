@@ -15,11 +15,12 @@ class User {
   public async handleMessage(controller: Controller) {
     const currentTime = Date.now();
     const twoHours = 2 * 60 * 60 * 1000;
-    if(currentTime - this.lastMessageTime > twoHours) {
+    if(currentTime - this.lastMessageTime <= twoHours) {
+    return;
+    }
     this.lastMessageTime = currentTime;
     await controller.sayHiBack(this);
     await controller.sendMenuLink(this);
-    }
     return;
   }
 

@@ -1,38 +1,39 @@
-import {UserState, UserStateDefault} from "./UserState";
 import Controller from "./Controller";
 import {PlainUser} from "./UserRepository";
 
 class User {
   public id: string;
   public name: string;
-  state: UserState;
+  public lastMessageTime;
 
-  public constructor(id: string, name: string) {
+  public constructor(id: string, name: string, time: number) {
     this.id = id;
     this.name = name;
-    this.state = new UserStateDefault();
+    this.lastMessageTime = time;
   }
 
-  public async handleMessage(option: string, controller: Controller) {
-    return await this.state.handleMessage(option, controller, this);
-  }
-
-  public setState(state: UserState) {
-    this.state = state;
+  public async handleMessage(controller: Controller) {
+    const currentTime = Date.now();
+    const twoHours = 2 * 60 * 60 * 1000;
+    if(currentTime - this.lastMessageTime <= twoHours) {
+    return;
+    }
+    this.lastMessageTime = currentTime;
+    await controller.sayHiBack(this);
+    await controller.sendMenuLink(this);
+    return;
   }
 
   public toJSON(): PlainUser {
     return {
       id: this.id,
       name: this.name,
-      state: this.state.toJSON()
+      lastMessageTime: this.lastMessageTime
     };
   }
 
   public static fromJSON(data: PlainUser): User {
-    const user = new User(data.id, data.name);
-    user.state = UserState.fromJSON(data.state);
-    return user;
+    return new User(data.id, data.name, data.lastMessageTime);
   }
 }
 

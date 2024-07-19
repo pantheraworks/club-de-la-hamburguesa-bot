@@ -36,15 +36,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const User_1 = __importDefault(require("./User"));
-const Parser_1 = require("./Parser");
 const fs = __importStar(require("fs"));
 const UserRepository_1 = require("./UserRepository");
 class Controller {
     constructor(client) {
         this.client = client;
         this.usersFilePath = "./src/users.json";
-        this.parser = new Parser_1.Parser("");
-        this.paymentMethod = 'Todavía no se realizó el pedido';
         if (!fs.existsSync(this.usersFilePath)) {
             fs.writeFileSync(this.usersFilePath, '{}', 'utf-8');
         }
@@ -57,10 +54,10 @@ class Controller {
             if (!user) {
                 user = new User_1.default(message.from, message.sender.pushname || '');
             }
-            const response = yield user.handleMessage(message.body, this);
+            yield user.handleMessage(this);
             users[message.from] = user;
             userRepository.saveUsers(users);
-            return response;
+            return;
         });
     }
     sayHiBack(user) {
@@ -82,41 +79,6 @@ class Controller {
     sendMenuLink(user) {
         return __awaiter(this, void 0, void 0, function* () {
             return this.sendLink(user, 'https://pedilo.store/el-club-de-la-hamburguesa', 'Para realizar un pedido 👇🏼', '');
-        });
-    }
-    validateParser() {
-        if (this.parser.name === null) {
-            console.error("Nombre no encontrado");
-            return false;
-        }
-        if (this.parser.items.length === 0) {
-            console.error("No se encontraron items");
-            return false;
-        }
-        if (this.parser.subtotal === null) {
-            console.error("Subtotal no encontrado");
-            return false;
-        }
-        const sumItems = this.parser.items.reduce((sum, item) => sum + (item.price), 0);
-        const totalWithDelivery = sumItems + (this.parser.address ? this.parser.deliveryExtraPrice : 0);
-        if (this.parser.subtotal !== totalWithDelivery) {
-            console.error(`El subtotal (${this.parser.subtotal}) no coincide con la suma de los items más entrega (${totalWithDelivery})`);
-            return false;
-        }
-        if (this.parser.table === null && this.parser.address === null && !this.parser.takeAway) {
-            console.error("Número de mesa, dirección y opción de retiro por el local no encontrados");
-            return false;
-        }
-        return true;
-    }
-    sendPaymentMethods(user) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.sendText(user.id, 'Como abonas? \n' +
-                '● Efectivo (avísanos si te tenemos que llevar cambio) \n' +
-                '● Mercado pago (mándanos el comprobante de pago)\n' +
-                'Nombre del titular: Santiago Agustín  Ruiz\n' +
-                'Alias: espina.catre.reno.mp\n' +
-                'CBU: 0000003100040939563722');
         });
     }
 }

@@ -9,32 +9,34 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const UserState_1 = require("./UserState");
 class User {
     constructor(id, name) {
         this.id = id;
         this.name = name;
-        this.state = new UserState_1.UserStateDefault();
+        this.lastMessageTime = -(3 * 60 * 60 * 1000);
     }
-    handleMessage(option, controller) {
+    handleMessage(controller) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.state.handleMessage(option, controller, this);
+            const currentTime = Date.now();
+            const twoHours = 2 * 60 * 60 * 1000;
+            if (currentTime - this.lastMessageTime > twoHours) {
+                this.lastMessageTime = currentTime;
+                yield controller.sayHiBack(this);
+                yield controller.sendMenuLink(this);
+            }
+            return;
         });
-    }
-    setState(state) {
-        this.state = state;
     }
     toJSON() {
         return {
             id: this.id,
             name: this.name,
-            state: this.state.toJSON()
+            lastMessageTime: this.lastMessageTime
         };
     }
     static fromJSON(data) {
         const user = new User(data.id, data.name);
-        console.log(data.state);
-        user.state = UserState_1.UserState.fromJSON(data.state);
+        user.lastMessageTime = data.lastMessageTime;
         return user;
     }
 }

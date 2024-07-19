@@ -19,7 +19,7 @@ class UserRepository {
             console.error('Error reading users file:', error);
             data = '{}';
         }
-        let plainUsers = [];
+        let plainUsers;
         try {
             plainUsers = JSON.parse(data);
         }

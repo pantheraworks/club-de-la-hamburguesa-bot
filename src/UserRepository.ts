@@ -4,7 +4,7 @@ import fs from "fs";
 export interface PlainUser {
   id: string;
   name: string;
-  state: string;
+  lastMessageTime: number;
 }
 
 export class UserRepository {
@@ -18,7 +18,7 @@ export class UserRepository {
       console.error('Error reading users file:', error);
       data = '{}';
     }
-    let plainUsers: PlainUser[] = [];
+    let plainUsers: PlainUser[];
     try {
       plainUsers = JSON.parse(data);
     } catch (error) {
